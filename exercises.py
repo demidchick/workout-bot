@@ -6,7 +6,7 @@ EXERCISES = [
     ("Leg Curl", 30, 12, 2, 10),
     ("Dumbbell Curl", 12.5, 11, 2, 2.5),
     ("Overhead Cable", 30, 10, 2, 5),
-    ("Triceps Pulldown", 50, 8, 2, 10),
+    ("Pulldowns", 50, 8, 2, 10),
     ("Cable Crunch", 50, 12, 2, 10),
 ]
 
