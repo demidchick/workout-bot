@@ -109,9 +109,46 @@ async def create_exercise_checklist():
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
     
-    if query.data == 'update_all':
+    if query.data.startswith('toggle_'):
+        try:
+            message = query.message
+            keyboard = message.reply_markup.inline_keyboard
+            index = int(query.data.split('_')[1])
+            
+            # Count selected exercises and update buttons
+            selected_count = 0
+            for row in keyboard[:-1]:  # Exclude the save button row
+                for button in row:
+                    if button.callback_data == query.data:
+                        # Explicitly create new button with updated text
+                        current_text = button.text
+                        new_text = current_text.replace('⬜', '✅') if '⬜' in current_text else current_text.replace('✅', '⬜')
+                        button.text = new_text
+                    
+                    if '✅' in button.text:
+                        selected_count += 1
+            
+            # Create new save button
+            keyboard[-1] = [InlineKeyboardButton(f"Save Selection ({selected_count} selected)", callback_data="save_selection")]
+            
+            # Create entirely new markup
+            new_markup = InlineKeyboardMarkup(keyboard)
+            
+            # Update the message with new markup
+            await message.edit_text(
+                text="Select exercises to keep unchanged:",
+                reply_markup=new_markup
+            )
+            
+            # Provide feedback via answer callback
+            await query.answer(text="Selection updated!")
+            
+        except Exception as e:
+            logging.error(f"Error in toggle handler: {str(e)}")
+            await query.answer(text="Error updating selection")
+    
+    elif query.data == 'update_all':
         data = load_data()
         for exercise in data['exercises']:
             result = calculate_next_workout(
@@ -135,34 +172,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "Select exercises to keep unchanged:",
             reply_markup=keyboard
-        )
-    
-    elif query.data.startswith('toggle_'):
-        message = query.message
-        keyboard = message.reply_markup.inline_keyboard
-        
-        # Count selected exercises and update buttons
-        selected_count = 0
-        for row in keyboard[:-1]:  # Exclude the save button row
-            for button in row:
-                if button.callback_data == query.data:
-                    text = button.text
-                    if '⬜' in text:
-                        button.text = text.replace('⬜', '✅')
-                    else:
-                        button.text = text.replace('✅', '⬜')
-                
-                if '✅' in button.text:
-                    selected_count += 1
-        
-        # Update save button
-        save_button = keyboard[-1][0]
-        save_button.text = f"Save Selection ({selected_count} selected)"
-        
-        # Immediately update the message with new keyboard
-        await query.edit_message_text(
-            text="Select exercises to keep unchanged:",
-            reply_markup=InlineKeyboardMarkup(keyboard)
         )
     
     elif query.data == 'save_selection':
