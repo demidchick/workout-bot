@@ -113,35 +113,44 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query.data.startswith('toggle_'):
         try:
             message = query.message
-            keyboard = message.reply_markup.inline_keyboard
-            index = int(query.data.split('_')[1])
-            
-            # Count selected exercises and update buttons
+            old_keyboard = message.reply_markup.inline_keyboard
+            new_keyboard = []
             selected_count = 0
-            for row in keyboard[:-1]:  # Exclude the save button row
+            
+            # Create new keyboard with new buttons
+            for row in old_keyboard[:-1]:  # Exclude save button
+                new_row = []
                 for button in row:
                     if button.callback_data == query.data:
-                        # Explicitly create new button with updated text
+                        # Create new button with toggled state
                         current_text = button.text
                         new_text = current_text.replace('⬜', '✅') if '⬜' in current_text else current_text.replace('✅', '⬜')
-                        button.text = new_text
+                        new_button = InlineKeyboardButton(text=new_text, callback_data=button.callback_data)
+                    else:
+                        # Keep existing button
+                        new_button = InlineKeyboardButton(text=button.text, callback_data=button.callback_data)
                     
-                    if '✅' in button.text:
+                    if '✅' in new_button.text:
                         selected_count += 1
+                    
+                    new_row.append(new_button)
+                new_keyboard.append(new_row)
             
-            # Create new save button
-            keyboard[-1] = [InlineKeyboardButton(f"Save Selection ({selected_count} selected)", callback_data="save_selection")]
+            # Add save button
+            new_keyboard.append([InlineKeyboardButton(
+                text=f"Save Selection ({selected_count} selected)", 
+                callback_data="save_selection"
+            )])
             
-            # Create entirely new markup
-            new_markup = InlineKeyboardMarkup(keyboard)
+            # Create new markup with new keyboard
+            new_markup = InlineKeyboardMarkup(new_keyboard)
             
-            # Update the message with new markup
+            # Update message with new markup
             await message.edit_text(
                 text="Select exercises to keep unchanged:",
                 reply_markup=new_markup
             )
             
-            # Provide feedback via answer callback
             await query.answer(text="Selection updated!")
             
         except Exception as e:
