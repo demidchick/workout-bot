@@ -1,0 +1,68 @@
+{
+    "exercises": [
+        {
+            "name": "Overhead Press",
+            "weight": 35,
+            "reps": 11,
+            "sets": 3,
+            "increment": 5
+        },
+        {
+            "name": "Bench Press",
+            "weight": 16.25,
+            "reps": 10,
+            "sets": 3,
+            "increment": 1.25
+        },
+        {
+            "name": "Chest Row",
+            "weight": 25,
+            "reps": 11,
+            "sets": 3,
+            "increment": 1.25
+        },
+        {
+            "name": "Leg Press",
+            "weight": 50,
+            "reps": 12,
+            "sets": 2,
+            "increment": 1.25
+        },
+        {
+            "name": "Leg Curl",
+            "weight": 30,
+            "reps": 12,
+            "sets": 2,
+            "increment": 10
+        },
+        {
+            "name": "Dumbbell Curl",
+            "weight": 12.5,
+            "reps": 11,
+            "sets": 2,
+            "increment": 2.5
+        },
+        {
+            "name": "Overhead Cable",
+            "weight": 30,
+            "reps": 10,
+            "sets": 2,
+            "increment": 5
+        },
+        {
+            "name": "Triceps Pulldown",
+            "weight": 50,
+            "reps": 8,
+            "sets": 2,
+            "increment": 10
+        },
+        {
+            "name": "Cable Crunch",
+            "weight": 50,
+            "reps": 12,
+            "sets": 2,
+            "increment": 10
+        }
+    ],
+    "last_update": null
+}
