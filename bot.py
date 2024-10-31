@@ -248,22 +248,15 @@ async def select_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def reset_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    from exercises import EXERCISES
-    initial_data = {
-        "exercises": [
-            {
-                "name": name,
-                "weight": weight,
-                "reps": reps,
-                "sets": sets,
-                "increment": increment
-            }
-            for name, weight, reps, sets, increment in EXERCISES
-        ],
-        "last_update": None
-    }
-    save_data(initial_data)
-    await update.message.reply_text("Exercise data has been reset to initial values!")
+    try:
+        with open('data.json', 'r') as f:
+            initial_data = json.load(f)
+            # Reset last_update to None
+            initial_data['last_update'] = None
+            save_data(initial_data)
+            await update.message.reply_text("Exercise data has been reset to initial values!")
+    except FileNotFoundError:
+        await update.message.reply_text("Error: Could not find initial data file!")
 
 def main():
     application = Application.builder().token(TOKEN).build()
