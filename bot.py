@@ -249,14 +249,82 @@ async def select_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def reset_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        with open('data.json', 'r') as f:
-            initial_data = json.load(f)
-            # Reset last_update to None
-            initial_data['last_update'] = None
-            save_data(initial_data)
-            await update.message.reply_text("Exercise data has been reset to initial values!")
-    except FileNotFoundError:
-        await update.message.reply_text("Error: Could not find initial data file!")
+        # Define the initial exercises
+        initial_data = {
+            "exercises": [
+                {
+                    "name": "Overhead Press",
+                    "weight": 35,
+                    "reps": 11,
+                    "sets": 3,
+                    "increment": 5
+                },
+                {
+                    "name": "Bench Press",
+                    "weight": 16.25,
+                    "reps": 10,
+                    "sets": 3,
+                    "increment": 1.25
+                },
+                {
+                    "name": "Chest Row",
+                    "weight": 25,
+                    "reps": 11,
+                    "sets": 3,
+                    "increment": 1.25
+                },
+                {
+                    "name": "Leg Press",
+                    "weight": 50,
+                    "reps": 12,
+                    "sets": 2,
+                    "increment": 1.25
+                },
+                {
+                    "name": "Leg Curl",
+                    "weight": 30,
+                    "reps": 12,
+                    "sets": 2,
+                    "increment": 10
+                },
+                {
+                    "name": "Dumbbell Curl",
+                    "weight": 12.5,
+                    "reps": 11,
+                    "sets": 2,
+                    "increment": 2.5
+                },
+                {
+                    "name": "Overhead Cable",
+                    "weight": 30,
+                    "reps": 10,
+                    "sets": 2,
+                    "increment": 5
+                },
+                {
+                    "name": "Pulldowns",
+                    "weight": 50,
+                    "reps": 8,
+                    "sets": 2,
+                    "increment": 10
+                },
+                {
+                    "name": "Cable Crunch",
+                    "weight": 50,
+                    "reps": 12,
+                    "sets": 2,
+                    "increment": 10
+                }
+            ],
+            "last_update": None
+        }
+        
+        save_data(initial_data)
+        await update.message.reply_text("Exercise data has been reset to initial values!")
+        # Show the current workout after reset
+        await current_workout(update, context)
+    except Exception as e:
+        await update.message.reply_text(f"Error resetting exercises: {str(e)}")
 
 def main():
     application = Application.builder().token(TOKEN).build()
