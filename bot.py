@@ -45,7 +45,7 @@ def format_workout_message(exercises, title):
     message += "`───────────────────────────`\n"
     
     for exercise in exercises:
-        message += f"`{exercise['name']:<15} {exercise['weight']:>5.1f}kg {exercise['reps']:>2d}`\n"
+        message += f"`{exercise['name']:<15} {exercise['weight']:>6.2f}kg {exercise['reps']:>2d}`\n"
     
     return message
 
