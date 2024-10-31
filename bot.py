@@ -92,7 +92,7 @@ async def create_exercise_checklist():
     for i, exercise in enumerate(data['exercises']):
         callback_data = f"toggle_{i}"
         button = InlineKeyboardButton(
-            f"☐ {exercise['name']}", 
+            f"⬜ {exercise['name']}",
             callback_data=callback_data
         )
         row.append(button)
@@ -147,14 +147,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for button in row:
                 if button.callback_data == query.data:
                     text = button.text
-                    if '☐' in text:
-                        # Make selected items bold with a filled checkbox
-                        button.text = f"☑ *{text[2:]}*"
+                    if '⬜' in text:
+                        button.text = text.replace('⬜', '✅')
                     else:
-                        # Remove bold and checkbox for unselected items
-                        button.text = f"☐ {text[2:].strip('*')}"
+                        button.text = text.replace('✅', '⬜')
                 
-                if '☑' in button.text:
+                if '✅' in button.text:
                     selected_count += 1
         
         # Update save button
@@ -172,7 +170,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Find selected exercises
         for row in keyboard:
             for button in row:
-                if button.callback_data.startswith('toggle_') and '☑' in button.text:
+                if button.callback_data.startswith('toggle_') and '✅' in button.text:
                     index = int(button.callback_data.split('_')[1])
                     selected_indices.append(index)
                     selected_exercises.append(data['exercises'][index]['name'])
