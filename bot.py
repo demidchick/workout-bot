@@ -159,7 +159,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         save_button = keyboard[-1][0]
         save_button.text = f"Save Selection ({selected_count} selected)"
         
-        await query.edit_message_reply_markup(InlineKeyboardMarkup(keyboard))
+        # Immediately update the message with new keyboard
+        await query.edit_message_text(
+            text="Select exercises to keep unchanged:",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
     
     elif query.data == 'save_selection':
         keyboard = query.message.reply_markup.inline_keyboard
