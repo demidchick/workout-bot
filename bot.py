@@ -83,6 +83,28 @@ async def friday_reminder(context: ContextTypes.DEFAULT_TYPE):
         text="Would you like to update all exercises for next week?",
         reply_markup=reply_markup
     )
+
+async def create_exercise_checklist():
+    data = load_data()
+    keyboard = []
+    row = []
+    
+    for i, exercise in enumerate(data['exercises']):
+        callback_data = f"toggle_{i}"
+        button = InlineKeyboardButton(f"☐ {exercise['name']}", callback_data=callback_data)
+        row.append(button)
+        
+        if len(row) == 2:  # Create rows with 2 buttons each
+            keyboard.append(row)
+            row = []
+    
+    if row:  # Add remaining buttons
+        keyboard.append(row)
+    
+    # Add Save button at the bottom
+    keyboard.append([InlineKeyboardButton("Save Selection", callback_data="save_selection")])
+    return InlineKeyboardMarkup(keyboard)
+
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -106,9 +128,64 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("All exercises updated for next week!")
         await next_workout(update, context)
     
-    elif query.data == 'keep_unchanged':
-        await query.edit_message_text("Keeping all exercises unchanged for next week.")
-        await current_workout(update, context)
+    elif query.data == 'select_exercises':
+        keyboard = await create_exercise_checklist()
+        await query.edit_message_text(
+            "Select exercises to keep unchanged:",
+            reply_markup=keyboard
+        )
+    
+    elif query.data.startswith('toggle_'):
+        message = query.message
+        keyboard = message.reply_markup.inline_keyboard
+        index = int(query.data.split('_')[1])
+        
+        # Find the button and toggle checkbox
+        for row in keyboard:
+            for button in row:
+                if button.callback_data == query.data:
+                    text = button.text
+                    button.text = text.replace('☐', '☑') if '☐' in text else text.replace('☑', '☐')
+        
+        await query.edit_message_reply_markup(InlineKeyboardMarkup(keyboard))
+    
+    elif query.data == 'save_selection':
+        keyboard = query.message.reply_markup.inline_keyboard
+        data = load_data()
+        selected_indices = []
+        
+        # Find selected exercises
+        for row in keyboard:
+            for button in row:
+                if button.callback_data.startswith('toggle_') and '☑' in button.text:
+                    index = int(button.callback_data.split('_')[1])
+                    selected_indices.append(index)
+        
+        # Update non-selected exercises
+        for i, exercise in enumerate(data['exercises']):
+            if i not in selected_indices:
+                result = calculate_next_workout(
+                    exercise['name'],
+                    exercise['weight'],
+                    exercise['reps'],
+                    exercise['sets'],
+                    exercise['increment']
+                )
+                _, weight, reps, _ = result
+                exercise['weight'] = weight
+                exercise['reps'] = reps
+        
+        data['last_update'] = datetime.now().isoformat()
+        save_data(data)
+        await query.edit_message_text("Exercises updated! Selected exercises kept unchanged.")
+        await next_workout(update, context)
+
+async def select_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = await create_exercise_checklist()
+    await update.message.reply_text(
+        "Select exercises to keep unchanged:",
+        reply_markup=keyboard
+    )
 
 def main():
     application = Application.builder().token(TOKEN).build()
@@ -117,6 +194,9 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("current", current_workout))
     application.add_handler(CommandHandler("next", next_workout))
+    
+    # Add new command handler
+    application.add_handler(CommandHandler("select", select_exercises))
     
     # Callback query handler for buttons
     application.add_handler(CallbackQueryHandler(button_handler))
