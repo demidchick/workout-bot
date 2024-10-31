@@ -17,7 +17,23 @@ def load_data():
         with open('data.json', 'r') as f:
             return json.load(f)
     except FileNotFoundError:
-        return {"exercises": [], "last_update": None}
+        # Initialize from EXERCISES only if data.json doesn't exist
+        from exercises import EXERCISES
+        initial_data = {
+            "exercises": [
+                {
+                    "name": name,
+                    "weight": weight,
+                    "reps": reps,
+                    "sets": sets,
+                    "increment": increment
+                }
+                for name, weight, reps, sets, increment in EXERCISES
+            ],
+            "last_update": None
+        }
+        save_data(initial_data)  # Save initial data
+        return initial_data
 
 def save_data(data):
     with open('data.json', 'w') as f:
@@ -231,6 +247,24 @@ async def select_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=keyboard
     )
 
+async def reset_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    from exercises import EXERCISES
+    initial_data = {
+        "exercises": [
+            {
+                "name": name,
+                "weight": weight,
+                "reps": reps,
+                "sets": sets,
+                "increment": increment
+            }
+            for name, weight, reps, sets, increment in EXERCISES
+        ],
+        "last_update": None
+    }
+    save_data(initial_data)
+    await update.message.reply_text("Exercise data has been reset to initial values!")
+
 def main():
     application = Application.builder().token(TOKEN).build()
     
@@ -259,6 +293,8 @@ def main():
         time=target_time.time(),
         data=CHAT_ID  # You'll need to add your chat ID here
     )
+    
+    application.add_handler(CommandHandler("reset", reset_exercises))
     
     application.run_polling()
 
