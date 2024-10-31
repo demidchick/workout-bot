@@ -92,7 +92,7 @@ async def create_exercise_checklist():
     for i, exercise in enumerate(data['exercises']):
         callback_data = f"toggle_{i}"
         button = InlineKeyboardButton(
-            f"☐ {exercise['name']} ({exercise['weight']}kg {exercise['reps']}r)", 
+            f"☐ {exercise['name']}", 
             callback_data=callback_data
         )
         row.append(button)
@@ -104,7 +104,6 @@ async def create_exercise_checklist():
     if row:
         keyboard.append(row)
     
-    # Add Save button with counter
     keyboard.append([InlineKeyboardButton("Save Selection (0 selected)", callback_data="save_selection")])
     return InlineKeyboardMarkup(keyboard)
 
@@ -141,25 +140,26 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data.startswith('toggle_'):
         message = query.message
         keyboard = message.reply_markup.inline_keyboard
-        index = int(query.data.split('_')[1])
         
-        # Count selected exercises and update save button
+        # Count selected exercises and update buttons
         selected_count = 0
-        for row in keyboard:
+        for row in keyboard[:-1]:  # Exclude the save button row
             for button in row:
                 if button.callback_data == query.data:
                     text = button.text
-                    button.text = text.replace('☐', '☑') if '☐' in text else text.replace('☑', '☐')
-                if button.callback_data.startswith('toggle_') and '☑' in button.text:
+                    if '☐' in text:
+                        # Make selected items bold with a filled checkbox
+                        button.text = f"☑ *{text[2:]}*"
+                    else:
+                        # Remove bold and checkbox for unselected items
+                        button.text = f"☐ {text[2:].strip('*')}"
+                
+                if '☑' in button.text:
                     selected_count += 1
         
-        # Update the save button text
+        # Update save button
         save_button = keyboard[-1][0]
         save_button.text = f"Save Selection ({selected_count} selected)"
-        
-        # Show temporary feedback
-        feedback = "✓ Selection updated" if '☑' in button.text else "✗ Selection removed"
-        await query.answer(text=feedback, show_alert=False)
         
         await query.edit_message_reply_markup(InlineKeyboardMarkup(keyboard))
     
