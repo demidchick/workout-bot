@@ -83,7 +83,6 @@ async def friday_reminder(context: ContextTypes.DEFAULT_TYPE):
         text="Would you like to update all exercises for next week?",
         reply_markup=reply_markup
     )
-
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -106,9 +105,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         save_data(data)
         await query.edit_message_text("All exercises updated for next week!")
     
-    elif query.data == 'select_exercises':
-        # Add exercise selection logic here
-        await query.edit_message_text("Feature coming soon!")
+    elif query.data == 'keep_unchanged':
+        await query.edit_message_text("Keeping all exercises unchanged for next week.")
 
 def main():
     application = Application.builder().token(TOKEN).build()
