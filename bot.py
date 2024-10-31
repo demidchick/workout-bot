@@ -25,11 +25,11 @@ def save_data(data):
 
 def format_workout_message(exercises, title):
     message = f"*{title}*\n\n"
-    message += "`Exercise               Weight  Reps`\n"
-    message += "`────────────────────────────────`\n"
+    message += "`Exercise         Weight  Reps`\n"
+    message += "`───────────────────────────`\n"
     
     for exercise in exercises:
-        message += f"`{exercise['name']:<20} {exercise['weight']:>5.1f}kg {exercise['reps']:>2d}`\n"
+        message += f"`{exercise['name']:<15} {exercise['weight']:>5.1f}kg {exercise['reps']:>2d}`\n"
     
     return message
 
