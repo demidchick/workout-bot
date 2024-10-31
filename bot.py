@@ -104,9 +104,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         data['last_update'] = datetime.now().isoformat()
         save_data(data)
         await query.edit_message_text("All exercises updated for next week!")
+        await next_workout(update, context)
     
     elif query.data == 'keep_unchanged':
         await query.edit_message_text("Keeping all exercises unchanged for next week.")
+        await current_workout(update, context)
 
 def main():
     application = Application.builder().token(TOKEN).build()
