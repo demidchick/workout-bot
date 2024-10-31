@@ -5,6 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, JobQueue
 import pytz
 from config import TOKEN, CHAT_ID, TIMEZONE
+from workout_calculator import calculate_next_workout
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
