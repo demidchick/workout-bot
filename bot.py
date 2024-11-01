@@ -358,10 +358,14 @@ async def reset_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Error resetting exercises: {str(e)}")
 
 def main():
+    logging.info("Starting bot...")
     try:
+        logging.info("Initializing database...")
         init_db()  # Initialize database tables
+        logging.info("Database initialized successfully!")
     except Exception as e:
         logging.error(f"Failed to initialize database: {e}")
+        raise e  # This will stop the bot if database init fails
     
     application = Application.builder().token(TOKEN).build()
     
