@@ -126,8 +126,7 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
             old_weight,
             weight,
             old_reps,
-            reps,
-            "auto_update"
+            reps
         )
         
         next_exercises.append({
@@ -249,8 +248,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 old_weight,
                 weight,
                 old_reps,
-                reps,
-                "auto_update"
+                reps
             )
         
         data['last_update'] = datetime.now().isoformat()
@@ -306,8 +304,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     old_weight,
                     weight,
                     old_reps,
-                    reps,
-                    "selective_update"
+                    reps
                 )
         
         data['last_update'] = datetime.now().isoformat()
@@ -421,14 +418,12 @@ async def show_history(update: Update, context: ContextTypes.DEFAULT_TYPE):
             timestamp, exercise = row[1], row[2]
             old_weight, new_weight = row[3], row[4]
             old_reps, new_reps = row[6], row[7]
-            reason = row[9]
             
             message += (
                 f"*{exercise}*\n"
                 f"Date: {timestamp.strftime('%Y-%m-%d %H:%M')}\n"
                 f"Weight: {old_weight}→{new_weight} ({row[5]:+.1f}kg)\n"
-                f"Reps: {old_reps}→{new_reps} ({row[8]:+d})\n"
-                f"Type: {reason}\n\n"
+                f"Reps: {old_reps}→{new_reps} ({row[8]:+d})\n\n"
             )
         
         # Escape special characters for MarkdownV2
