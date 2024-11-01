@@ -53,7 +53,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Hi! I'm your workout progression bot.\n"
         "Use /current to see current weights\n"
-        "Use /next to see next workout targets"
+        "Use /plan_next to see next workout targets"
     )
 
 async def current_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -240,10 +240,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(message)
         await next_workout(update, context)
 
-async def select_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def plan_next_week(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = await create_exercise_checklist()
     await update.message.reply_text(
-        "Select exercises to keep unchanged:",
+        "Select exercises to keep unchanged for next week:",
         reply_markup=keyboard
     )
 
@@ -329,33 +329,11 @@ async def reset_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     application = Application.builder().token(TOKEN).build()
     
-    # Command handlers
+    # Update command handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("current", current_workout))
-    application.add_handler(CommandHandler("next", next_workout))
-    
-    # Add new command handler
-    application.add_handler(CommandHandler("select", select_exercises))
-    
-    # Callback query handler for buttons
+    application.add_handler(CommandHandler("plan_next", plan_next_week))  # Renamed command
     application.add_handler(CallbackQueryHandler(button_handler))
-    
-    # Schedule Friday reminder
-    job_queue = application.job_queue
-    
-    # Schedule for every Friday at 5 PM (17:00)
-    target_time = datetime.now(pytz.timezone(TIMEZONE)).replace(
-        hour=17, minute=0, second=0, microsecond=0
-    )
-    
-    job_queue.run_daily(
-        friday_reminder,
-        days=(4,),  # 4 is Friday (Monday is 0)
-        time=target_time.time(),
-        data=CHAT_ID  # You'll need to add your chat ID here
-    )
-    
-    application.add_handler(CommandHandler("reset", reset_exercises))
     
     application.run_polling()
 
