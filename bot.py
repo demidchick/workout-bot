@@ -97,11 +97,25 @@ async def current_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = format_workout_message(data['exercises'], "Current workout targets:")
     await update.message.reply_text(message, parse_mode='MarkdownV2')
 
-async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_unchanged=None):
+    if keep_unchanged is None:
+        keep_unchanged = []
+    
     data = load_data()
     next_exercises = []
     
     for exercise in data['exercises']:
+        if exercise['name'] in keep_unchanged:
+            # Keep exercise unchanged
+            next_exercises.append({
+                'name': exercise['name'],
+                'weight': exercise['weight'],
+                'reps': exercise['reps'],
+                'sets': exercise['sets'],
+                'volume_change': 0
+            })
+            continue
+            
         # Store old values for logging
         old_weight = exercise['weight']
         old_reps = exercise['reps']
@@ -318,7 +332,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = "All exercises were updated!"
             
         await query.edit_message_text(message)
-        await next_workout(update, context)
+        await next_workout(update, context, keep_unchanged=selected_exercises)
 
 async def plan_next_week(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = await create_exercise_checklist()
