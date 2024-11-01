@@ -102,6 +102,11 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     next_exercises = []
     
     for exercise in data['exercises']:
+        # Store old values for logging
+        old_weight = exercise['weight']
+        old_reps = exercise['reps']
+        
+        # Calculate new values
         result = calculate_next_workout(
             exercise['name'],
             exercise['weight'],
@@ -110,6 +115,21 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
             exercise['increment']
         )
         name, weight, reps, volume_change = result
+        
+        # Update exercise with new values
+        exercise['weight'] = weight
+        exercise['reps'] = reps
+        
+        # Log the progression
+        log_progression(
+            exercise['name'],
+            old_weight,
+            weight,
+            old_reps,
+            reps,
+            "auto_update"
+        )
+        
         next_exercises.append({
             'name': name,
             'weight': weight,
@@ -117,6 +137,9 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'sets': exercise['sets'],
             'volume_change': volume_change
         })
+    
+    # Save the updated values to database
+    save_data(data)
     
     message = format_workout_message(next_exercises, "Next workout targets:", show_volume_change=True)
     
