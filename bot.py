@@ -5,7 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 from config import TOKEN
 from workout_calculator import calculate_next_workout
-from progression_tracker import log_progression
+from progression_tracker import log_progression, init_db, get_progression_history
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -353,6 +353,11 @@ async def reset_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Error resetting exercises: {str(e)}")
 
 def main():
+    try:
+        init_db()  # Initialize database tables
+    except Exception as e:
+        logging.error(f"Failed to initialize database: {e}")
+    
     application = Application.builder().token(TOKEN).build()
     
     # Update command handlers
