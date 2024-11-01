@@ -2,9 +2,8 @@ import logging
 from datetime import datetime
 import json
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, JobQueue
-import pytz
-from config import TOKEN, CHAT_ID, TIMEZONE
+from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
+from config import TOKEN
 from workout_calculator import calculate_next_workout
 
 logging.basicConfig(
@@ -108,22 +107,6 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     message = format_workout_message(next_exercises, "Next workout targets:", show_volume_change=True)
     await update.message.reply_text(message, parse_mode='MarkdownV2')
-
-async def friday_reminder(context: ContextTypes.DEFAULT_TYPE):
-    data = load_data()
-    keyboard = [
-        [
-            InlineKeyboardButton("Yes", callback_data='update_all'),
-            InlineKeyboardButton("Select exercises", callback_data='select_exercises')
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await context.bot.send_message(
-        chat_id=context.job.data,
-        text="Would you like to update all exercises for next week?",
-        reply_markup=reply_markup
-    )
 
 async def create_exercise_checklist():
     data = load_data()
