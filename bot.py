@@ -56,20 +56,20 @@ def get_display_name(exercise_name):
 def format_workout_message(exercises, title, show_volume_change=False):
     message = f"*{title}*\n\n"
     if show_volume_change:
-        message += "`Exercise  Weight Reps  %`\n"
-        message += "`───────────────────────`\n"
+        message += "`Exercise    Weight Reps  %`\n"
+        message += "`─────────────────────────`\n"
         
         for exercise in exercises:
             volume_change = exercise.get('volume_change', 0)
-            name = get_display_name(exercise['name'])
-            message += f"`{name:<8} {exercise['weight']:>5.1f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
+            name = exercise['name'][:10]  # Truncate name to 10 chars
+            message += f"`{name:<10} {exercise['weight']:>5.1f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
     else:
-        message += "`Exercise  Weight Reps`\n"
-        message += "`──────────────────`\n"
+        message += "`Exercise    Weight Reps`\n"
+        message += "`────────────────────`\n"
         
         for exercise in exercises:
-            name = get_display_name(exercise['name'])
-            message += f"`{name:<8} {exercise['weight']:>5.1f} {exercise['reps']:>3d}`\n"
+            name = exercise['name'][:10]  # Truncate name to 10 chars
+            message += f"`{name:<10} {exercise['weight']:>5.1f} {exercise['reps']:>3d}`\n"
     
     return message
 
@@ -97,15 +97,16 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
             exercise['sets'],
             exercise['increment']
         )
-        name, weight, reps, _ = result
+        name, weight, reps, volume_change = result
         next_exercises.append({
             'name': name,
             'weight': weight,
             'reps': reps,
-            'sets': exercise['sets']
+            'sets': exercise['sets'],
+            'volume_change': volume_change
         })
     
-    message = format_workout_message(next_exercises, "Next workout targets:")
+    message = format_workout_message(next_exercises, "Next workout targets:", show_volume_change=True)
     await update.message.reply_text(message, parse_mode='MarkdownV2')
 
 async def friday_reminder(context: ContextTypes.DEFAULT_TYPE):
