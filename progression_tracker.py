@@ -20,27 +20,34 @@ def get_db_connection():
     return connection
 
 def init_db():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS progression_history (
-            id SERIAL PRIMARY KEY,
-            timestamp TIMESTAMP,
-            exercise VARCHAR(100),
-            old_weight FLOAT,
-            new_weight FLOAT,
-            weight_change FLOAT,
-            old_reps INTEGER,
-            new_reps INTEGER,
-            reps_change INTEGER,
-            reason VARCHAR(50)
-        )
-    ''')
-    
-    conn.commit()
-    cur.close()
-    conn.close()
+    logging.info("Attempting to initialize database...")
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        logging.info("Creating progression_history table...")
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS progression_history (
+                id SERIAL PRIMARY KEY,
+                timestamp TIMESTAMP,
+                exercise VARCHAR(100),
+                old_weight FLOAT,
+                new_weight FLOAT,
+                weight_change FLOAT,
+                old_reps INTEGER,
+                new_reps INTEGER,
+                reps_change INTEGER,
+                reason VARCHAR(50)
+            )
+        ''')
+        
+        conn.commit()
+        logging.info("Table created successfully!")
+        cur.close()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Failed to initialize database: {str(e)}")
+        raise e
 
 def log_progression(exercise_name, old_weight, new_weight, old_reps, new_reps, reason):
     try:
