@@ -222,7 +222,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == 'update_all':
         data = load_data()
         for exercise in data['exercises']:
-            # Before updating the exercise, store old values
+            # Store old values
             old_weight = exercise['weight']
             old_reps = exercise['reps']
             
@@ -240,14 +240,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             exercise['weight'] = weight
             exercise['reps'] = reps
             
-            # Log the progression
-            log_progression(
-                exercise['name'],
-                old_weight,
-                weight,
-                old_reps,
-                reps
-            )
+            # Remove this logging call
+            # log_progression(
+            #     exercise['name'],
+            #     old_weight,
+            #     weight,
+            #     old_reps,
+            #     reps
+            # )
         
         data['last_update'] = datetime.now().isoformat()
         save_data(data)
