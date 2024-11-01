@@ -16,7 +16,7 @@ def load_data():
     conn = get_db_connection()
     cur = conn.cursor()
     
-    cur.execute('SELECT name, weight, reps, sets, increment FROM exercises')
+    cur.execute('SELECT name, weight, reps, sets, increment FROM exercises ORDER BY id')
     exercises = [
         {
             "name": row[0],
@@ -51,37 +51,21 @@ def save_data(data):
     cur.close()
     conn.close()
 
-def get_display_name(exercise_name):
-    name_mapping = {
-        'Overhead Press': 'Shoulders',
-        'Bench Press': 'Chest',
-        'Chest Row': 'Back',
-        'Leg Press': 'Glutes',
-        'Leg Curl': 'Hams',
-        'Dumbbell Curl': 'Biceps',
-        'Overhead Cable': 'Triceps 1',
-        'Pulldowns': 'Triceps 2',
-        'Cable Crunch': 'Core'
-    }
-    return name_mapping.get(exercise_name, exercise_name)
-
 def format_workout_message(exercises, title, show_volume_change=False):
     message = f"*{title}*\n\n"
     if show_volume_change:
-        message += "`Exercise    Weight Reps  %`\n"
-        message += "`─────────────────────────`\n"
+        message += "`Exercise        Weight Reps  %`\n"
+        message += "`───────────────────────────────`\n"
         
         for exercise in exercises:
             volume_change = exercise.get('volume_change', 0)
-            name = exercise['name'][:10]  # Truncate name to 10 chars
-            message += f"`{name:<10} {exercise['weight']:>5.1f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
+            message += f"`{exercise['name']:<14} {exercise['weight']:>5.1f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
     else:
-        message += "`Exercise    Weight Reps`\n"
-        message += "`────────────────────`\n"
+        message += "`Exercise        Weight Reps`\n"
+        message += "`────────────────────────────`\n"
         
         for exercise in exercises:
-            name = exercise['name'][:10]  # Truncate name to 10 chars
-            message += f"`{name:<10} {exercise['weight']:>5.1f} {exercise['reps']:>3d}`\n"
+            message += f"`{exercise['name']:<14} {exercise['weight']:>5.1f} {exercise['reps']:>3d}`\n"
     
     return message
 
