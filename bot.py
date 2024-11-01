@@ -5,7 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 from config import TOKEN
 from workout_calculator import calculate_next_workout
-from progression_tracker import log_progression, init_db, get_progression_history
+from progression_tracker import log_progression, init_db, get_progression_history, get_db_connection
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -13,31 +13,43 @@ logging.basicConfig(
 )
 
 def load_data():
-    try:
-        with open('data.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        # Initialize from EXERCISES only if data.json doesn't exist
-        from exercises import EXERCISES
-        initial_data = {
-            "exercises": [
-                {
-                    "name": name,
-                    "weight": weight,
-                    "reps": reps,
-                    "sets": sets,
-                    "increment": increment
-                }
-                for name, weight, reps, sets, increment in EXERCISES
-            ],
-            "last_update": None
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    cur.execute('SELECT name, weight, reps, sets, increment FROM exercises')
+    exercises = [
+        {
+            "name": row[0],
+            "weight": row[1],
+            "reps": row[2],
+            "sets": row[3],
+            "increment": row[4]
         }
-        save_data(initial_data)  # Save initial data
-        return initial_data
+        for row in cur.fetchall()
+    ]
+    
+    cur.close()
+    conn.close()
+    
+    return {
+        "exercises": exercises,
+        "last_update": datetime.now().isoformat()
+    }
 
 def save_data(data):
-    with open('data.json', 'w') as f:
-        json.dump(data, f, indent=4)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    for exercise in data['exercises']:
+        cur.execute('''
+            UPDATE exercises 
+            SET weight = %s, reps = %s, last_update = NOW()
+            WHERE name = %s
+        ''', (exercise['weight'], exercise['reps'], exercise['name']))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
 
 def get_display_name(exercise_name):
     name_mapping = {
