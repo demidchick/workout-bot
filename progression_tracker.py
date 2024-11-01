@@ -41,6 +41,41 @@ def init_db():
             )
         ''')
         
+        # Create exercises table
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS exercises (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) UNIQUE,
+                weight FLOAT,
+                reps INTEGER,
+                sets INTEGER,
+                increment FLOAT,
+                last_update TIMESTAMP DEFAULT NOW()
+            )
+        ''')
+        
+        # Initialize with default exercises if table is empty
+        cur.execute('SELECT COUNT(*) FROM exercises')
+        if cur.fetchone()[0] == 0:
+            initial_exercises = [
+                ("Overhead Press", 35, 11, 3, 5),
+                ("Bench Press", 16.25, 10, 3, 1.25),
+                ("Chest Row", 25, 11, 3, 1.25),
+                ("Leg Press", 50, 12, 2, 1.25),
+                ("Leg Curl", 30, 12, 2, 10),
+                ("Dumbbell Curl", 12.5, 11, 2, 2.5),
+                ("Overhead Cable", 30, 10, 2, 5),
+                ("Pulldowns", 50, 8, 2, 10),
+                ("Cable Crunch", 50, 12, 2, 10)
+            ]
+            
+            for name, weight, reps, sets, increment in initial_exercises:
+                cur.execute('''
+                    INSERT INTO exercises (name, weight, reps, sets, increment)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON CONFLICT (name) DO NOTHING
+                ''', (name, weight, reps, sets, increment))
+        
         conn.commit()
         logging.info("Table created successfully!")
         cur.close()
