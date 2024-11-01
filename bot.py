@@ -5,6 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 from config import TOKEN
 from workout_calculator import calculate_next_workout
+from progression_tracker import log_progression
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -184,6 +185,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == 'update_all':
         data = load_data()
         for exercise in data['exercises']:
+            # Before updating the exercise, store old values
+            old_weight = exercise['weight']
+            old_reps = exercise['reps']
+            
+            # Calculate new values
             result = calculate_next_workout(
                 exercise['name'],
                 exercise['weight'],
@@ -192,8 +198,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 exercise['increment']
             )
             _, weight, reps, _ = result
+            
+            # Update the exercise
             exercise['weight'] = weight
             exercise['reps'] = reps
+            
+            # Log the progression
+            log_progression(
+                exercise['name'],
+                old_weight,
+                weight,
+                old_reps,
+                reps,
+                "auto_update"
+            )
         
         data['last_update'] = datetime.now().isoformat()
         save_data(data)
