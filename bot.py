@@ -247,6 +247,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Update non-selected exercises
         for i, exercise in enumerate(data['exercises']):
             if i not in selected_indices:
+                # Store old values before updating
+                old_weight = exercise['weight']
+                old_reps = exercise['reps']
+                
+                # Calculate new values
                 result = calculate_next_workout(
                     exercise['name'],
                     exercise['weight'],
@@ -255,8 +260,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     exercise['increment']
                 )
                 _, weight, reps, _ = result
+                
+                # Update the exercise
                 exercise['weight'] = weight
                 exercise['reps'] = reps
+                
+                # Log the progression
+                log_progression(
+                    exercise['name'],
+                    old_weight,
+                    weight,
+                    old_reps,
+                    reps,
+                    "selective_update"
+                )
         
         data['last_update'] = datetime.now().isoformat()
         save_data(data)
@@ -374,6 +391,7 @@ def main():
     application.add_handler(CommandHandler("current", current_workout))
     application.add_handler(CommandHandler("plan_next", plan_next_week))  # Renamed command
     application.add_handler(CallbackQueryHandler(button_handler))
+    application.add_handler(CommandHandler("history", show_history))
     
     application.run_polling()
 
