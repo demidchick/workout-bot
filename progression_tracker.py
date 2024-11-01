@@ -37,7 +37,9 @@ def init_db():
                 old_reps INTEGER,
                 new_reps INTEGER,
                 reps_change INTEGER,
-                reason VARCHAR(50)
+                old_volume FLOAT8,
+                new_volume FLOAT8,
+                volume_change_percent FLOAT8
             )
         ''')
         
@@ -84,20 +86,34 @@ def init_db():
         logging.error(f"Failed to initialize database: {str(e)}")
         raise e
 
-def log_progression(exercise_name, old_weight, new_weight, old_reps, new_reps, reason):
+def log_progression(exercise_name, old_weight, new_weight, old_reps, new_reps):
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         
+        # Get sets from exercises table
+        cur.execute("SELECT sets FROM exercises WHERE name = %s", (exercise_name,))
+        result = cur.fetchone()
+        if not result:
+            raise ValueError(f"Could not find sets for exercise {exercise_name}")
+        sets = result[0]
+        
+        # Calculate volumes and changes
+        old_volume = old_weight * old_reps * sets
+        new_volume = new_weight * new_reps * sets
+        volume_change_percent = ((new_volume / old_volume) - 1) * 100 if old_volume > 0 else 0
         weight_change = round(new_weight - old_weight, 2)
         reps_change = new_reps - old_reps
         
-        cur.execute('''
+        # Insert into progression_history
+        cur.execute("""
             INSERT INTO progression_history 
             (timestamp, exercise, old_weight, new_weight, weight_change, 
-             old_reps, new_reps, reps_change, reason)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ''', (
+             old_reps, new_reps, reps_change,
+             old_volume, new_volume, volume_change_percent)
+            VALUES 
+            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
             datetime.now(),
             exercise_name,
             old_weight,
@@ -106,14 +122,19 @@ def log_progression(exercise_name, old_weight, new_weight, old_reps, new_reps, r
             old_reps,
             new_reps,
             reps_change,
-            reason
+            round(old_volume, 2),
+            round(new_volume, 2),
+            round(volume_change_percent, 2)
         ))
         
         conn.commit()
+        
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
         cur.close()
         conn.close()
-    except Exception as e:
-        logging.error(f"Error logging progression: {str(e)}")
 
 def get_progression_history():
     try:
