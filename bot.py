@@ -107,7 +107,12 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
         })
     
     message = format_workout_message(next_exercises, "Next workout targets:", show_volume_change=True)
-    await update.message.reply_text(message, parse_mode='MarkdownV2')
+    
+    # Handle both message and callback query updates
+    if update.message:
+        await update.message.reply_text(message, parse_mode='MarkdownV2')
+    elif update.callback_query:
+        await update.callback_query.message.reply_text(message, parse_mode='MarkdownV2')
 
 async def create_exercise_checklist():
     data = load_data()
