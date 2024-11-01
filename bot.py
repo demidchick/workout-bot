@@ -39,13 +39,37 @@ def save_data(data):
     with open('data.json', 'w') as f:
         json.dump(data, f, indent=4)
 
-def format_workout_message(exercises, title):
+def get_display_name(exercise_name):
+    name_mapping = {
+        'Overhead Press': 'Shoulders',
+        'Bench Press': 'Chest',
+        'Chest Row': 'Back',
+        'Leg Press': 'Glutes',
+        'Leg Curl': 'Hams',
+        'Dumbbell Curl': 'Biceps',
+        'Overhead Cable': 'Triceps 1',
+        'Pulldowns': 'Triceps 2',
+        'Cable Crunch': 'Core'
+    }
+    return name_mapping.get(exercise_name, exercise_name)
+
+def format_workout_message(exercises, title, show_volume_change=False):
     message = f"*{title}*\n\n"
-    message += "`Exercise         Weight  Reps`\n"
-    message += "`───────────────────────────`\n"
-    
-    for exercise in exercises:
-        message += f"`{exercise['name']:<15} {exercise['weight']:>6.2f}kg {exercise['reps']:>2d}`\n"
+    if show_volume_change:
+        message += "`Exercise  Weight Reps  %`\n"
+        message += "`───────────────────────`\n"
+        
+        for exercise in exercises:
+            volume_change = exercise.get('volume_change', 0)
+            name = get_display_name(exercise['name'])
+            message += f"`{name:<8} {exercise['weight']:>5.1f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
+    else:
+        message += "`Exercise  Weight Reps`\n"
+        message += "`──────────────────`\n"
+        
+        for exercise in exercises:
+            name = get_display_name(exercise['name'])
+            message += f"`{name:<8} {exercise['weight']:>5.1f} {exercise['reps']:>3d}`\n"
     
     return message
 
