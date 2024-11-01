@@ -374,6 +374,40 @@ async def reset_exercises(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"Error resetting exercises: {str(e)}")
 
+async def show_history(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        rows = get_progression_history()
+        if not rows:
+            await update.message.reply_text("No progression history found yet.")
+            return
+            
+        message = "*Recent Exercise Updates:*\n\n"
+        for row in rows[:10]:  # Show last 10 updates
+            timestamp, exercise = row[1], row[2]
+            old_weight, new_weight = row[3], row[4]
+            old_reps, new_reps = row[6], row[7]
+            reason = row[9]
+            
+            message += (
+                f"*{exercise}*\n"
+                f"Date: {timestamp.strftime('%Y-%m-%d %H:%M')}\n"
+                f"Weight: {old_weight}→{new_weight} ({row[5]:+.1f}kg)\n"
+                f"Reps: {old_reps}→{new_reps} ({row[8]:+d})\n"
+                f"Type: {reason}\n\n"
+            )
+        
+        # Escape special characters for MarkdownV2
+        message = (message
+                  .replace('.', '\.')
+                  .replace('-', '\-')
+                  .replace('+', '\+'))
+        
+        await update.message.reply_text(message, parse_mode='MarkdownV2')
+        
+    except Exception as e:
+        logging.error(f"Error in show_history: {str(e)}")
+        await update.message.reply_text(f"Error showing history: {str(e)}")
+
 def main():
     logging.info("Starting bot...")
     try:
