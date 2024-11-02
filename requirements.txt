@@ -1,4 +1,3 @@
-python-telegram-bot[job-queue]
 python-dotenv
 pytz
 psycopg2-binary

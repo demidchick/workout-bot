@@ -32,8 +32,7 @@ def load_data():
     conn.close()
     
     return {
-        "exercises": exercises,
-        "last_update": datetime.now().isoformat()
+        "exercises": exercises
     }
 
 def save_data(data):
@@ -219,41 +218,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             logging.error(f"Error in toggle handler: {str(e)}")
             await query.answer(text="Error updating selection")
-    
-    elif query.data == 'update_all':
-        data = load_data()
-        for exercise in data['exercises']:
-            # Store old values
-            old_weight = exercise['weight']
-            old_reps = exercise['reps']
-            
-            # Calculate new values
-            result = calculate_next_workout(
-                exercise['name'],
-                exercise['weight'],
-                exercise['reps'],
-                exercise['sets'],
-                exercise['increment']
-            )
-            _, weight, reps, _ = result
-            
-            # Update the exercise
-            exercise['weight'] = weight
-            exercise['reps'] = reps
-            
-            # Remove this logging call
-            # log_progression(
-            #     exercise['name'],
-            #     old_weight,
-            #     weight,
-            #     old_reps,
-            #     reps
-            # )
-        
-        data['last_update'] = datetime.now().isoformat()
-        save_data(data)
-        await query.edit_message_text("All exercises updated for next week!")
-        await next_workout(update, context)
     
     elif query.data == 'select_exercises':
         keyboard = await create_exercise_checklist()
