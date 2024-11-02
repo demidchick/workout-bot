@@ -81,7 +81,7 @@ async def current_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = format_workout_message(data['exercises'], "Current workout targets:")
     await update.message.reply_text(message, parse_mode='MarkdownV2')
 
-async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_unchanged=None):
+async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_unchanged=None, save_to_db=True):
     if keep_unchanged is None:
         keep_unchanged = []
     
@@ -135,8 +135,9 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_
             'volume_change': volume_change
         })
     
-    # Save the updated values to database
-    save_data(data)
+    # Only save to database if explicitly requested
+    if save_to_db:
+        save_data(data)
     
     message = format_workout_message(next_exercises, "Next workout targets:", show_volume_change=True)
     
@@ -275,39 +276,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     selected_indices.append(index)
                     selected_exercises.append(data['exercises'][index]['name'])
         
-        # Update non-selected exercises
-        for i, exercise in enumerate(data['exercises']):
-            if i not in selected_indices:
-                # Store old values before updating
-                old_weight = exercise['weight']
-                old_reps = exercise['reps']
-                
-                # Calculate new values
-                result = calculate_next_workout(
-                    exercise['name'],
-                    exercise['weight'],
-                    exercise['reps'],
-                    exercise['sets'],
-                    exercise['increment']
-                )
-                _, weight, reps, _ = result
-                
-                # Update the exercise
-                exercise['weight'] = weight
-                exercise['reps'] = reps
-                
-                # Log the progression
-                log_progression(
-                    exercise['name'],
-                    old_weight,
-                    weight,
-                    old_reps,
-                    reps
-                )
-        
-        data['last_update'] = datetime.now().isoformat()
-        save_data(data)
-        
         # Create feedback message with kept exercises
         if selected_exercises:
             kept_exercises = "\n• " + "\n• ".join(selected_exercises)
@@ -316,7 +284,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = "All exercises were updated!"
             
         await query.edit_message_text(message)
-        await next_workout(update, context, keep_unchanged=selected_exercises)
+        # Pass save_to_db=False since we already saved in the button handler
+        await next_workout(update, context, keep_unchanged=selected_exercises, save_to_db=False)
 
 async def plan_next_week(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = await create_exercise_checklist()
