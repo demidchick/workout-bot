@@ -51,18 +51,20 @@ def save_data(data):
     conn.close()
 
 def format_workout_message(exercises, title, show_volume_change=False):
-    message = "WORKOUT TARGETS\n\n"
-    
-    # Calculate max length for exercise names for proper alignment
-    max_name_length = max(len(exercise['name']) for exercise in exercises)
-    
-    for exercise in exercises:
-        # Exactly one space before colon, one space after colon
-        padded_name = f"{exercise['name']:<{max_name_length}}"
-        message += (
-            f"• {padded_name} : "  # Note the space before and after colon
-            f"{exercise['weight']:.2f} × {exercise['reps']}\n"
-        )
+    message = f"*{title}*\n\n"
+    if show_volume_change:
+        message += "`Exercise        Weight Reps  %`\n"
+        #message += "`───────────────────────────────`\n"
+        
+        for exercise in exercises:
+            volume_change = exercise.get('volume_change', 0)
+            message += f"`{exercise['name']:<14} {exercise['weight']:>6.2f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
+    else:
+        message += "`Exercise        Weight Reps`\n"
+        # message += "`────────────────────────────`\n"
+        
+        for exercise in exercises:
+            message += f"`{exercise['name']:<14} {exercise['weight']:>6.2f} {exercise['reps']:>3d}`\n"
     
     return message
 
@@ -75,8 +77,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def current_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
-    message = format_workout_message(data['exercises'], "Current workout targets")
-    await update.message.reply_text(message)
+    message = format_workout_message(data['exercises'], "Current workout targets:")
+    await update.message.reply_text(message, parse_mode='MarkdownV2')
 
 async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_unchanged=None, save_to_db=True):
     if keep_unchanged is None:
@@ -140,9 +142,9 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_
     
     # Handle both message and callback query updates
     if update.message:
-        await update.message.reply_text(message)
+        await update.message.reply_text(message, parse_mode='MarkdownV2')
     elif update.callback_query:
-        await update.callback_query.message.reply_text(message)
+        await update.callback_query.message.reply_text(message, parse_mode='MarkdownV2')
 
 async def create_exercise_checklist():
     data = load_data()
