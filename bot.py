@@ -57,9 +57,10 @@ def format_workout_message(exercises, title, show_volume_change=False):
     max_name_length = max(len(exercise['name']) for exercise in exercises)
     
     for exercise in exercises:
+        # Ensure consistent spacing: one space after bullet, padded name, one space, colon, one space
         message += (
-            f"• {exercise['name']:<{max_name_length}} : "
-            f"{exercise['weight']:>5.2f} × {exercise['reps']:>2d}\n"
+            f"• {exercise['name']:<{max_name_length}} : "  # Note the single space before and after colon
+            f"{exercise['weight']:<5.2f} × {exercise['reps']}\n"
         )
     
     return message
@@ -73,8 +74,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def current_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
-    message = format_workout_message(data['exercises'], "Current workout targets:")
-    await update.message.reply_text(message)
+    message = format_workout_message(data['exercises'], "Current workout targets")
+    await update.message.reply_text(message)  # No parse_mode needed
 
 async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_unchanged=None, save_to_db=True):
     if keep_unchanged is None:
