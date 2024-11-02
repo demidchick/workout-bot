@@ -51,20 +51,17 @@ def save_data(data):
     conn.close()
 
 def format_workout_message(exercises, title, show_volume_change=False):
-    message = f"*{title}*\n\n"
-    if show_volume_change:
-        message += "`Exercise        Weight Reps  %`\n"
-        message += "`───────────────────────────────`\n"
-        
-        for exercise in exercises:
-            volume_change = exercise.get('volume_change', 0)
-            message += f"`{exercise['name']:<14} {exercise['weight']:>6.2f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
-    else:
-        message += "`Exercise        Weight Reps`\n"
-        message += "`────────────────────────────`\n"
-        
-        for exercise in exercises:
-            message += f"`{exercise['name']:<14} {exercise['weight']:>6.2f} {exercise['reps']:>3d}`\n"
+    message = "WORKOUT TARGETS\n\n"
+    
+    # Calculate max length for exercise names for proper alignment
+    max_name_length = max(len(exercise['name']) for exercise in exercises)
+    
+    for exercise in exercises:
+        # Format: bullet, space, padded name, space, colon, space, weight, space, ×, space, reps
+        message += (
+            f"• {exercise['name']:<{max_name_length}} : "
+            f"{exercise['weight']:>5.2f} × {exercise['reps']:>2d}\n"
+        )
     
     return message
 
