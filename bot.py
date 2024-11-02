@@ -284,8 +284,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = "All exercises were updated!"
             
         await query.edit_message_text(message)
-        # Pass save_to_db=False since we already saved in the button handler
-        await next_workout(update, context, keep_unchanged=selected_exercises, save_to_db=False)
+        # Changed save_to_db to True to ensure updates are saved
+        await next_workout(update, context, keep_unchanged=selected_exercises, save_to_db=True)
 
 async def plan_next_week(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = await create_exercise_checklist()
