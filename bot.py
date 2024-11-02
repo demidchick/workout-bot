@@ -57,7 +57,6 @@ def format_workout_message(exercises, title, show_volume_change=False):
     max_name_length = max(len(exercise['name']) for exercise in exercises)
     
     for exercise in exercises:
-        # Format: bullet, space, padded name, space, colon, space, weight, space, ×, space, reps
         message += (
             f"• {exercise['name']:<{max_name_length}} : "
             f"{exercise['weight']:>5.2f} × {exercise['reps']:>2d}\n"
@@ -75,7 +74,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def current_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = load_data()
     message = format_workout_message(data['exercises'], "Current workout targets:")
-    await update.message.reply_text(message, parse_mode='MarkdownV2')
+    await update.message.reply_text(message)
 
 async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_unchanged=None, save_to_db=True):
     if keep_unchanged is None:
@@ -139,9 +138,9 @@ async def next_workout(update: Update, context: ContextTypes.DEFAULT_TYPE, keep_
     
     # Handle both message and callback query updates
     if update.message:
-        await update.message.reply_text(message, parse_mode='MarkdownV2')
+        await update.message.reply_text(message)
     elif update.callback_query:
-        await update.callback_query.message.reply_text(message, parse_mode='MarkdownV2')
+        await update.callback_query.message.reply_text(message)
 
 async def create_exercise_checklist():
     data = load_data()
