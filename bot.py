@@ -5,7 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 from config import TOKEN
 from workout_calculator import calculate_next_workout
-from progression_tracker import log_progression, init_db, get_progression_history, get_db_connection
+from progression_tracker import log_progression, init_db, get_db_connection
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -294,38 +294,6 @@ async def plan_next_week(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=keyboard
     )
 
-async def show_history(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        rows = get_progression_history()
-        if not rows:
-            await update.message.reply_text("No progression history found yet.")
-            return
-            
-        message = "*Recent Exercise Updates:*\n\n"
-        for row in rows[:10]:  # Show last 10 updates
-            timestamp, exercise = row[1], row[2]
-            old_weight, new_weight = row[3], row[4]
-            old_reps, new_reps = row[6], row[7]
-            
-            message += (
-                f"*{exercise}*\n"
-                f"Date: {timestamp.strftime('%Y-%m-%d %H:%M')}\n"
-                f"Weight: {old_weight}→{new_weight} ({row[5]:+.1f}kg)\n"
-                f"Reps: {old_reps}→{new_reps} ({row[8]:+d})\n\n"
-            )
-        
-        # Escape special characters for MarkdownV2
-        message = (message
-                  .replace('.', '\.')
-                  .replace('-', '\-')
-                  .replace('+', '\+'))
-        
-        await update.message.reply_text(message, parse_mode='MarkdownV2')
-        
-    except Exception as e:
-        logging.error(f"Error in show_history: {str(e)}")
-        await update.message.reply_text(f"Error showing history: {str(e)}")
-
 def main():
     logging.info("Starting bot...")
     try:
@@ -343,7 +311,6 @@ def main():
     application.add_handler(CommandHandler("current", current_workout))
     application.add_handler(CommandHandler("plan_next", plan_next_week))  # Renamed command
     application.add_handler(CallbackQueryHandler(button_handler))
-    application.add_handler(CommandHandler("history", show_history))
     
     application.run_polling()
 

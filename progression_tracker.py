@@ -119,24 +119,3 @@ def log_progression(exercise_name, old_weight, new_weight, old_reps, new_reps):
     finally:
         cur.close()
         conn.close()
-
-def get_progression_history():
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        
-        cur.execute('''
-            SELECT * FROM progression_history 
-            ORDER BY timestamp DESC 
-            LIMIT 50
-        ''')
-        
-        rows = cur.fetchall()
-        
-        cur.close()
-        conn.close()
-        
-        return rows
-    except Exception as e:
-        logging.error(f"Error getting progression history: {str(e)}")
-        return []
