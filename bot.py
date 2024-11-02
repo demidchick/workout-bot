@@ -59,13 +59,13 @@ def format_workout_message(exercises, title, show_volume_change=False):
         
         for exercise in exercises:
             volume_change = exercise.get('volume_change', 0)
-            message += f"`{exercise['name']:<14} {exercise['weight']:>5.1f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
+            message += f"`{exercise['name']:<14} {exercise['weight']:>6.2f} {exercise['reps']:>3d} {volume_change:>+3.0f}`\n"
     else:
         message += "`Exercise        Weight Reps`\n"
         message += "`────────────────────────────`\n"
         
         for exercise in exercises:
-            message += f"`{exercise['name']:<14} {exercise['weight']:>5.1f} {exercise['reps']:>3d}`\n"
+            message += f"`{exercise['name']:<14} {exercise['weight']:>6.2f} {exercise['reps']:>3d}`\n"
     
     return message
 
