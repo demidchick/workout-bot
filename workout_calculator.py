@@ -47,9 +47,9 @@ def calculate_next_workout(name, current_weight, current_reps, sets, weight_incr
     
     def sort_key(combo):
         weight, reps, volume, increase = combo
-        # Prioritize: closest to 4% increase, closest to current weight, closest to current reps
+        # Prioritize: minimum increase within 2-6% range, closest to current weight, closest to current reps
         return (
-            abs(4 - increase),  # Target middle of 2-6% range
+            increase,  # Choose minimum increase (since all values are already within 2-6% range)
             abs(weight - current_weight),
             abs(reps - current_reps)
         )
