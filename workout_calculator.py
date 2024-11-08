@@ -25,7 +25,8 @@ def calculate_next_workout(name, current_weight, current_reps, sets, weight_incr
             volume = get_volume(weight, reps)
             if min_target <= volume <= max_target:
                 increase = (volume/current_volume - 1) * 100
-                combinations.append((weight, reps, volume, increase))
+                if 2 <= increase <= 6:  # Only add combinations within our target range
+                    combinations.append((weight, reps, volume, increase))
     
     # Fallback logic
     if not combinations and current_reps < 15:
@@ -33,14 +34,16 @@ def calculate_next_workout(name, current_weight, current_reps, sets, weight_incr
         fallback_reps = current_reps + 1
         fallback_volume = get_volume(current_weight, fallback_reps)
         fallback_increase = (fallback_volume/current_volume - 1) * 100
-        combinations.append((current_weight, fallback_reps, fallback_volume, fallback_increase))
+        if 2 <= fallback_increase <= 6:  # Only add if within range
+            combinations.append((current_weight, fallback_reps, fallback_volume, fallback_increase))
         
         # Second fallback: try adding one rep at lower weight
         lower_weight = current_weight - weight_increment
         if lower_weight > 0:
             lower_volume = get_volume(lower_weight, fallback_reps)
             lower_increase = (lower_volume/current_volume - 1) * 100
-            combinations.append((lower_weight, fallback_reps, lower_volume, lower_increase))
+            if 2 <= lower_increase <= 6:  # Only add if within range
+                combinations.append((lower_weight, fallback_reps, lower_volume, lower_increase))
     
     if not combinations:
         return (name, current_weight, current_reps, 0)
